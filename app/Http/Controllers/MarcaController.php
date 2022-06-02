@@ -46,7 +46,7 @@ class MarcaController extends Controller
 
 
         //$marcas = $this->marca->with('modelos')->get();
-        return response()->json($marcaRepository->getResultados(), 200);
+        return response()->json($marcaRepository->getResultadosPaginados(3), 200);
     }
 
     /**
