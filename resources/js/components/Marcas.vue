@@ -30,7 +30,7 @@
                     <template v-slot:conteudo>
                         <table-component :dados="marcas.data"
                          :visualizar="{ visivel: true, dataToggle: 'modal', dataTarget: '#modalVizualizarMarca'}"
-                         :atualizar="true"
+                         :atualizar="{visivel: true, dataToggle: 'modal', dataTarget: '#modalAtualizarMarca'}"
                          :remover="{ visivel: true, dataToggle: 'modal', dataTarget: '#modalRemoverMarca' }"
                          :titulos="{id:{titulo: 'ID', tipo: 'text'},nome:{titulo: 'Nome', tipo: 'texto'},imagem:{titulo: 'Imagem', tipo: 'imagem'}}">
                          </table-component>
@@ -119,6 +119,32 @@
                     </template>
                 </modal-component>
 
+                <!-- Modal para atualizar marca -->
+
+                <modal-component id="modalAtualizarMarca" titulo="Atualizar Marca">
+                    <template v-slot:alertas>
+                        <alert-component tipo="success" titulo="Transação realizada com sucesso" :detalhes="$store.state.transacao" v-if="$store.state.transacao.status == 'sucesso'"></alert-component>
+                        <alert-component tipo="danger" titulo="Erro na transação" :detalhes="$store.state.transacao" v-if="$store.state.transacao.status == 'erro'"></alert-component>
+                    </template>
+                    <template v-slot:conteudo v-if="transacaoStatus != 'adicionada'">
+                        <div class="form-group">
+                            <input-container-component titulo="Nome da Marca" id="atualizarNome" id-help="atualizarNomeHelp" texto-help="Informe o nome da marca">
+                                <input type="text" class="form-control" id="atualizarNome" placeholder="nome da Marca" v-model="$store.state.item.nome">
+                            </input-container-component>
+                        </div>
+
+                        <div class="form-group">
+                            <input-container-component titulo="Imagem" id="atualizarImagem" id-help="atualizarImagemHelp" texto-help="Selecione uma imagem no formato png">
+                                <input type="file" class="form-control" id="atualizarImagem" placeholder="selecione uma imagem" @change="carregarImagem($event)">
+                            </input-container-component>
+                        </div>
+                    </template>
+                    <template v-slot:rodape>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" @click="atualizar()">Atualizar</button>
+                    </template>
+                </modal-component>
+
             </div>
         </div>
 
@@ -145,6 +171,37 @@ import Pagination from './Pagination.vue'
          }
      },
      methods: {
+         atualizar(){
+             let formData = new FormData();
+             formData.append('_method', 'patch');
+             formData.append('nome', this.$store.state.item.nome);
+             if(this.arquivoImagem[0]){
+                formData.append('imagem', this.arquivoImagem[0]);
+             }
+
+             let url = this.urlBase + '/' + this.$store.state.item.id
+
+             let config = {
+                 headers: {
+                     'Content-Type': 'multipart/form-data',
+                     'Accept': 'application/json',
+                     'Authorization': this.token
+                 }
+             }
+
+             axios.post(url, formData, config)
+                .then(response =>{
+                    this.$store.state.transacao.status = 'sucesso'
+                    this.$store.state.transacao.mensagem = 'Registro de marca atualizado com sucesso'
+                    atualizarImagem.value = ''
+                    this.carregarLista();
+                })
+                .catch(errors =>{
+                    this.$store.state.transacao.status = 'erro'
+                    this.$store.state.transacao.mensagem = errors.response.data.message
+                    this.$store.state.transacao.dados = errors.response.data.errors
+                })
+         },
          limpar(){
              this.transacaoStatus = ''
          },
@@ -179,7 +236,7 @@ import Pagination from './Pagination.vue'
             })
             .catch(errors =>{
 
-                console.log('Houve um erro na tentativa de remoção de registro', errors.response);
+
                 this.$store.state.transacao.status = 'erro'
                 this.$store.state.transacao.mensagem = errors.response.data.erro
 

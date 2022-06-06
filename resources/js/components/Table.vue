@@ -4,7 +4,7 @@
             <thead>
                 <tr>
                     <th scope="col" v-for="t, key in titulos" :key="key" class="text-uppercase">{{ t.titulo }}</th>
-                    <th v-if="atualizar || remover.visivel || visualizar.visivel" ></th>
+                    <th v-if="atualizar.visivel || remover.visivel || visualizar.visivel" ></th>
                 </tr>
             </thead>
             <tbody>
@@ -17,9 +17,9 @@
                             {{ valor }}
                         </span>
                     </td>
-                    <td v-if="atualizar || remover.visivel || visualizar.visivel">
+                    <td v-if="atualizar.visivel || remover.visivel || visualizar.visivel">
                         <button v-if="visualizar.visivel" :data-bs-toggle="visualizar.dataToggle" :data-bs-target="visualizar.dataTarget" class="btn btn-outline-primary btn-sm" @click="setStore(obj)">Visualizar</button>
-                        <button v-if="atualizar" class="btn btn-outline-primary btn-sm">Atualizar</button>
+                        <button v-if="atualizar.visivel" :data-bs-toggle="atualizar.dataToggle" :data-bs-target="atualizar.dataTarget" class="btn btn-outline-primary btn-sm" @click="setStore(obj)">Atualizar</button>
                         <button v-if="remover.visivel" :data-bs-toggle="remover.dataToggle" :data-bs-target="remover.dataTarget" class="btn btn-outline-danger btn-sm" @click="setStore(obj)">Remover</button>
                     </td>
                 </tr>
@@ -53,7 +53,8 @@
             setStore(obj){
                 this.$store.state.item = obj;
                 this.$store.state.transacao.status = '';
-                this.$store.state.transacao.mensagem = ''
+                this.$store.state.transacao.mensagem = '';
+                this.$store.state.transacao.dados = ''
             }
         },
         computed: {
